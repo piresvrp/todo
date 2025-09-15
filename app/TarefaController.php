@@ -15,10 +15,35 @@ class TarefaController {
     public function index() {
         $tarefas = $this->repo->listar();
         include __DIR__ . "/views/listar.php";
+        }
+
+
+    public function editar($id) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Atualiza a tarefa no banco
+            $tarefa = TarefaFactory::create($_POST['nome'], $_POST['descricao'], $_POST['status']);
+            $this->repo->atualizar($id, $tarefa);
+
+            // Redireciona para a lista
+            header("Location: index.php?action=index");
+            exit;
+        } else {
+            // Mostra o formulário com os dados da tarefa
+            $tarefa = $this->repo->getById($id);
+            include __DIR__ . "/views/editar.php";
+        }
     }
+
 
     public function criar() {
         include __DIR__ . "/views/form.php";
+    }
+
+    public function deletar($id)
+    {
+        //var_dump($id);die;
+        $this->repo->deletar($id);
+        $this->index();
     }
 
     public function salvar() {

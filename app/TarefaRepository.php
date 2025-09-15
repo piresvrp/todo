@@ -25,28 +25,47 @@ class TarefaRepository {
         $tarefas = [];
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $tarefas[] = new Tarefa(
-                $row['nome'],
-                $row['descricao'],
-                $row['data_hora'],
-                $row['status'],
-                $row['id']
-            );
+            $tarefas[] = [
+                'id' => $row['id'],
+                'nome' => $row['nome'],
+                'descricao' => $row['descricao'],
+                'data_hora' => $row['data_hora'],
+                'status' => $row['status']
+            ];
         }
 
         return $tarefas;
     }
 
-    public function atualizar(Tarefa $tarefa) {
-        $stmt = $this->pdo->prepare("UPDATE tarefas  SET nome = ?, descricao = ?, data_hora = ?, status = ?  WHERE id = ?");
+    public function getById($id) {
+        $stmt = $this->pdo->prepare("SELECT * FROM tarefas WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            return [
+                'id' => $row['id'],
+                'nome' => $row['nome'],
+                'descricao' => $row['descricao'],
+                'data_hora' => $row['data_hora'],
+                'status' => $row['status']
+            ];
+        }
+
+        return null; // caso não encontre
+    }
+
+
+    public function atualizar($id, $tarefa) {
+        $stmt = $this->pdo->prepare("UPDATE tarefas SET nome = :nome, descricao = :descricao, status = :status WHERE id = :id");
         $stmt->execute([
-            $tarefa->nome,
-            $tarefa->descricao,
-            $tarefa->data_hora,
-            $tarefa->status,
-            $tarefa->id
+            ':nome' => $tarefa->getNome(),
+            ':descricao' => $tarefa->getDescricao(),
+            ':status' => $tarefa->getStatus(),
+            ':id' => $id
         ]);
     }
+
 
     public function deletar($id) {
         $stmt = $this->pdo->prepare("DELETE FROM tarefas WHERE id = ?");
